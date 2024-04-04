@@ -154,13 +154,13 @@ model.to(device);
 
 
 ## Function to test the model using the test dataset
-def testDataset(msg_str):
+def testDataset(msg_str, loader):
     accuracy = 0
     model.eval()
     with torch.no_grad():
         #Set model to evaluation mode
         e_start = time.time()
-        for images, labels in test_loader:
+        for images, labels in loader:
             images, labels = images.to(device), labels.to(device)
             log_ps = model.forward(images)
     
@@ -174,17 +174,17 @@ def testDataset(msg_str):
 
         print(f'Model Performance for {msg_str}')
         print(f'Model Duration on Test Data (seconds): {e_end - e_start:.2f}',
-              f'Accuracy: {accuracy/len(test_loader)*100:.2f}%')
+              f'Accuracy: {accuracy/len(loader)*100:.2f}%')
     
     model.train()
-    return accuracy/len(test_loader)*100
+    return accuracy/len(loader)*100
 
 
 # In[8]:
 
 
 # Initially test the untrained model using the test dataset.            
-testDataset('Untrained Model');
+testDataset('Untrained Model', test_loader);
 
 
 # In[ ]:
@@ -220,19 +220,19 @@ for e in range(epochs):
                   f'Training Batch: {b_set} ',
                   f'Duration: {b_end - b_start:.2f} ',
                   f'Loss: {running_loss/step_size:.6f}')
-            testDataset(f'After Epoch {e+1}, Batch {b_set}')
+            testDataset(f'After Epoch {e+1}, Batch {b_set}', test_loader)
             running_loss = 0
 
             
     t_end = time.time()
     print(f'Training Epoch {e+1} duration: {t_end - t_start:.2f}')
-    epoch_accuracy = testDataset(f'After Training Epoch {e+1}')
+    epoch_accuracy = testDataset(f'After Training Epoch {e+1}', test_loader)
     
     # Save the model
-    f1 = e+1
-    f2 = epoch_accuracy
-    filename = f'checkpoint_e{f1}_accuracy{f2:.2f}.pth'
-    torch.save(model.state_dict(), filename)
+    #f1 = e+1
+    #f2 = epoch_accuracy
+    #filename = f'checkpoint_e{f1}_accuracy{f2:.2f}.pth'
+    #torch.save(model.state_dict(), filename)
 
 
 end = time.time()
@@ -247,7 +247,7 @@ print(f'Total Training Time (Seconds): {end - start:.2f}')
 
 
 # TODO: Do validation on the test set
-testDataset('Final Model');
+testDataset('Final Model with Validation Data', valid_loader);
 
 
 # ## Save the checkpoint
