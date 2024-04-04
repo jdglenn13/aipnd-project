@@ -1,3 +1,8 @@
+# Flower folder and tar file
+flowers/
+flower_data.tar.gz
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
