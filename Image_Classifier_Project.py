@@ -135,10 +135,7 @@ classifier = nn.Sequential(OrderedDict([
                           ('fc1', nn.Linear(25088, 4096)),
                           ('relu1', nn.ReLU()),
                           ('do1', nn.Dropout(0.2)),
-                          ('fc2', nn.Linear(4096, 1024)),
-                          ('relu2', nn.ReLU()),
-                          ('do2', nn.Dropout(0.2)),
-                          ('fc3', nn.Linear(1024, 102)),
+                          ('fc3', nn.Linear(4096, 102)),
                           ('output', nn.LogSoftmax(dim=1))]))    
 model.classifier = classifier
 
@@ -146,7 +143,7 @@ model.classifier = classifier
 criterion = nn.NLLLoss()
 
 # Only train the classifier parameters, feature parameters are frozen
-optimizer = optim.Adam(model.classifier.parameters(), lr=0.003)
+optimizer = optim.Adam(model.classifier.parameters(), lr=0.03)
 
 # Set the model to process based on device (cpu or cuda)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
