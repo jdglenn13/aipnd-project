@@ -143,7 +143,7 @@ model.classifier = classifier
 criterion = nn.NLLLoss()
 
 # Only train the classifier parameters, feature parameters are frozen
-optimizer = optim.Adam(model.classifier.parameters(), lr=0.03)
+optimizer = optim.Adam(model.classifier.parameters(), lr=0.003)
 
 # Set the model to process based on device (cpu or cuda)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -191,10 +191,10 @@ testDataset('Untrained Model');
 
 
 #Trainig the model and testing it with each epoch
-epochs = 2
+epochs = 4
 running_loss = 0
 step_size = 20
-
+start = time.time() #start of training
 for e in range(epochs):
     t_start = time.time()
     for ii, (images, labels) in enumerate(train_loader):
