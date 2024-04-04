@@ -2,6 +2,9 @@
 flowers/
 flower_data.tar.gz
 
+# models
+*.pth
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
