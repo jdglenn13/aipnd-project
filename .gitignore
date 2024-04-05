@@ -1,5 +1,6 @@
 # Flower folder and tar file
 flowers/
+inference/
 flower_data.tar.gz
 
 # models
