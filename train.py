@@ -2,6 +2,8 @@
 filename: train.py
 description: train.py is intended to facilitate training a new model using 
         either the vgg or resnet pre-trained models against an input data.
+author: Joshua Glenn (jglenn@its.jnj.com)
+last modified: 11Apr2024
 
 INPUTS: Arguments to the train.py script
     --image_directory: Directory with flower images to be used for training, 
@@ -25,7 +27,7 @@ import argparse
 import josh_flower_classifier as jfc
 
 
-## Process Arguments
+## Set Arguments
 parser = argparse.ArgumentParser(description='arguments for train.py')
 
 parser.add_argument('--image_directory', type = str, 
@@ -82,7 +84,7 @@ model, optimizer = jfc.trainModel(model, train_loader, test_loader, optimizer,
 
 ## Validate Training Model with validation data and save a checkpoint
 jfc.modelCheckpoint(model, optimizer, criterion, valid_loader, 
-                    checkpoint_filename, learn_rate, hidden_units)
+                    checkpoint_filename, learn_rate, hidden_units, arch)
 
 
 

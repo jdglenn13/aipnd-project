@@ -1,8 +1,10 @@
 '''
 filename: josh_flower_classifer.py
-description: This script includes the classes and functions necessary to 
-    suppor the train.py and predict.py scripts for the udacity 'AI Programming
+description: This script includes the functions necessary to 
+    support the train.py and predict.py scripts for the udacity 'AI Programming
     with Python' nanodegree program for creating my own image classifier.
+author: Joshua Glenn (jglenn@its.jnj.com)
+last modified: 11Apr2024
 '''
 
 ## Imports
@@ -299,7 +301,7 @@ def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs):
     
 # Run Validation Data through the model and Create a Model Checkpoint
 def modelCheckpoint(model, optimizer, criterion, valid_loader, 
-                    checkpoint_filename, learn_rate, hidden_units):
+                    checkpoint_filename, learn_rate, hidden_units, arch):
     '''
     modelCheckpoint will test the model using validation data, then save the
     model to a checkpoint file.
@@ -320,6 +322,8 @@ def modelCheckpoint(model, optimizer, criterion, valid_loader,
         used to include in checkpoint file.
     hidden_units : int
         used to include in checkpoint file.
+    arch : string
+        either "vgg" or "resnet".
 
     Returns
     -------
@@ -330,7 +334,7 @@ def modelCheckpoint(model, optimizer, criterion, valid_loader,
     final_accuracy, final_loss = testDataset("Test with Validation Data", 
                                             valid_loader, model, criterion)
 
-    checkpoint = {'model_type': str(type(model)),
+    checkpoint = {'arch': arch,
                   'learn_rate': learn_rate,
                   'hidden_units': hidden_units,
                   'classifier_state_dict': model.state_dict(),
@@ -340,8 +344,199 @@ def modelCheckpoint(model, optimizer, criterion, valid_loader,
     
     torch.save(checkpoint, checkpoint_filename)
     
+
+# Load Model function
+def load_checkpoint(filepath):
+    '''
+    load_checkpoint will take a filepath to a checkpoint file and load the 
+    model, optimizer and criterion.
+
+    Parameters
+    ----------
+    filepath : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    model : torchvision models vgg13 OR resnet34
+        configured model for flower classification that is already trained
+    optimizer : torch Adam optimizer
+        optimizer previously used to train the model and ready for further 
+        training
+    criterion : torch nn.NLLLoss
+        criterion ready to be used for training & testing the model.
+
+    '''
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    checkpoint = torch.load(filepath, map_location=device)
     
+    arch = checkpoint['arch']
+    learn_rate = checkpoint['learn_rate']
+    hidden_units = checkpoint['hidden_units']
     
+    model, optimizer, criterion = create_flower_network(arch, 
+                                                        learn_rate, 
+                                                        hidden_units)
     
+
+    model.load_state_dict(checkpoint['classifier_state_dict'])
+    model.class_to_idx = checkpoint['class_to_idx']
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     
+    accuracy = checkpoint['accuracy']
     
+    print(f'"{filepath}" "{arch}"model loaded with '
+          f'accuracy of {accuracy:.2f}%')
+    
+    return model, optimizer, criterion    
+    
+## process_image function
+def process_image(image):
+    '''
+    process_image will take an input image file and prepare the image for 
+    classification through a trained model, including normalization of the 
+    image.
+
+    Parameters
+    ----------
+    image : str
+        path/filename to image file to be processed.
+
+    Returns
+    -------
+    np_image : np.array()
+        nparray representing the input image.
+
+    '''
+    
+    # Process a PIL image for use in a PyTorch model
+    size = (256, 256)
+    crop = 224
+    with Image.open(image) as img:
+        img = img.resize(size)
+        width, height = img.size   # Get dimensions
+    
+        # set new crop dimensions
+        left = (width - crop)/2
+        top = (height - crop)/2
+        right = (width + crop)/2
+        bottom = (height + crop)/2
+        
+        # Crop the center of the image
+        img = img.crop((left, top, right, bottom))
+        np_image = np.array(img)
+    
+        #Normalize and transform
+        #help from the following page
+        # --> https://stackoverflow.com/questions/65617755/how-to-replicate-pytorch-normalization-in-opencv-or-numpy
+        MEAN = 255 * np.array([0.485, 0.456, 0.406])
+        STD = 255 * np.array([0.229, 0.224, 0.225])
+        np_image = np_image.transpose(-1, 0, 1)
+        np_image = (np_image - MEAN[:, None, None]) / STD[:, None, None]
+
+    return np_image
+
+## imshow function to display an image after it has been through process_image
+def imshow(image, ax=None, title=None):
+    '''
+    Displays the image that has been processed
+
+    Parameters
+    ----------
+    image : np.array()
+        np.array of image processed through process_image().
+    ax : axes, optional
+        DESCRIPTION. The default is None.
+    title : str, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    none
+
+    '''
+    if ax is None:
+        fig, ax = plt.subplots()
+    
+    # PyTorch tensors assume the color channel is the first dimension
+    # but matplotlib assumes is the third dimension
+    image = image.transpose((1, 2, 0))
+    
+    # Undo preprocessing
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    image = std * image + mean
+    
+    # Image needs to be clipped between 0 and 1 or it looks like noise when displayed
+    image = np.clip(image, 0, 1)
+    ax.set_title(title)
+        
+    ax.imshow(image)
+
+    
+def predict(image_path, act_class, model, topk=5):
+    '''
+    Predict the class (or classes) of an image using a trained deep learning model.
+
+    Parameters
+    ----------
+    image_path : str
+        path to the image file to be classified.
+    act_class : str
+        actual class of the provided image (1-102).
+    model : TYPE
+        DESCRIPTION.
+    topk : TYPE, optional
+        DESCRIPTION. The default is 5.
+
+    Returns
+    -------
+    None.
+
+    '''
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    
+    # Predict the class of the image
+    image = torch.tensor(process_image(image_path)).float().to(device)
+    image = image.unsqueeze(0)
+    
+    with torch.no_grad():
+        model.eval()
+        log_ps = model.forward(image)
+    
+        #calculate the accuracy
+        ps = torch.exp(log_ps)
+        top_p, top_class = ps.topk(topk)
+        #invert the class index
+        class_to_idx = {v: k for k, v in model.class_to_idx.items()}
+        top_class = list(itemgetter(*top_class.to('cpu').flatten().tolist())(class_to_idx))
+        model.train()
+        
+    probs = top_p.to('cpu').flatten().tolist()
+    
+    ## Plot the image
+    imshow(process_image(image_path), title=image_path)
+    
+    ## Plot the probabilities
+    fig, ax = plt.subplots()
+
+    with open('cat_to_name.json', 'r') as f:
+        cat_to_name = json.load(f)
+
+    # Example data
+    class_labels = list(itemgetter(*top_class)(cat_to_name))
+    for i in range(len(class_labels)):
+        if cat_to_name[act_class] == class_labels[i]:
+            class_labels[i] += '**' 
+    y_pos = np.arange(len(class_labels))
+    
+    ax.barh(y_pos, probs, align='center')
+    ax.set_yticks(y_pos, labels=class_labels)
+    ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_xlabel('Probability')
+    ax.set_ylabel('Top5 Classes (** is the actual class)')
+    
+    plt.show()
+    
+
