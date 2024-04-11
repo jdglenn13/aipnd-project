@@ -10,6 +10,7 @@ INPUTS: Arguments to the predict.py script
     --image_class : str
     --checkpoint_file : str
     --topk : int
+    --visualize : bool
     
 OUTPUTS: Displays image with graph showing topk classes.
 '''
@@ -35,10 +36,12 @@ parser.add_argument('--checkpoint_file', type = str,
                     help = ('REQUIRED - .pth file created from the train.py '
                             'script.'),
                     required = True)
-
 parser.add_argument('--topk', type = int, 
                     help = 'topk classes to display in the output, 1-5',
                     default = 5)
+parser.add_argument('--visualize', type = bool, 
+                    help = 'True will display results in matplotlib',
+                    default = False)
 
 
 
@@ -49,10 +52,11 @@ image_file = args.image_file
 image_class = args.image_class
 checkpoint_file = args.checkpoint_file
 topk = args.topk
+visualize = args.visualize
 
 
 ## Load model from specified checkpoint file
 model, optimizer, criterion = jfc.load_checkpoint(checkpoint_file)
 
 ## predict the classification of the provided image
-jfc.predict(image_file, image_class, model, topk)
+jfc.predict(image_file, image_class, model, topk, visualize)

@@ -436,8 +436,76 @@ def process_image(image):
 
     return np_image
 
+
+## function to display both the image and the plot of the prediction
+def predict_show(image, top_class, act_class, probs, 
+                 image_path):
+    '''
+    function used to plot both the image and the prediction called from the 
+    predict function.
+
+    Parameters
+    ----------
+    image : np.array()
+        np.array of PIL image created from process_image function.
+    top_class : list
+        list of the top classes.
+    act_class : str
+        actual class of the provided image (1-102).        
+    probs : list
+        list of the probabilities to plot
+    image_path : str
+        path of the image that was processed.
+
+    Returns
+    -------
+    None.
+
+    '''
+    
+    ##Establish the plots
+    fig, ax = plt.subplots(2,1,figsize=[10,10])
+    fig.subplots_adjust(left=0.3)
+
+    
+    # PyTorch tensors assume the color channel is the first dimension
+    # but matplotlib assumes is the third dimension
+    image = image.transpose((1, 2, 0))
+    
+    # Undo preprocessing
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    image = std * image + mean
+    
+    # Image needs to be clipped between 0 and 1 or it looks like noise when displayed
+    image = np.clip(image, 0, 1)
+    ax[0].set_title(image_path)
+        
+    ax[0].imshow(image)
+    
+    ## Plot the probabilities
+
+    with open('cat_to_name.json', 'r') as f:
+        cat_to_name = json.load(f)
+
+    # Example data
+    class_labels = list(itemgetter(*top_class)(cat_to_name))
+    for i in range(len(class_labels)):
+        if cat_to_name[act_class] == class_labels[i]:
+            class_labels[i] += '**' 
+    y_pos = np.arange(len(class_labels))
+    
+    ax[1].barh(y_pos, probs, align='center')
+    ax[1].set_yticks(y_pos, labels=class_labels)
+    ax[1].invert_yaxis()  # labels read top-to-bottom
+    ax[1].set_xlabel('Probability')
+    ax[1].set_ylabel('Top5 Classes (** is the actual class)')
+    ax[1].set_title(f'Prediction for {image_path}')
+    plt.show()    
+
+
 ## imshow function to display an image after it has been through process_image
-def imshow(image, ax=None, title=None):
+def imshow(image, title=None):
     '''
     Displays the image that has been processed
 
@@ -445,18 +513,15 @@ def imshow(image, ax=None, title=None):
     ----------
     image : np.array()
         np.array of image processed through process_image().
-    ax : axes, optional
-        DESCRIPTION. The default is None.
     title : str, optional
-        DESCRIPTION. The default is None.
+        Title for the plot
 
     Returns
     -------
     none
 
     '''
-    if ax is None:
-        fig, ax = plt.subplots()
+    fig, ax = plt.subplots()
     
     # PyTorch tensors assume the color channel is the first dimension
     # but matplotlib assumes is the third dimension
@@ -473,8 +538,12 @@ def imshow(image, ax=None, title=None):
         
     ax.imshow(image)
 
+
+
     
-def predict(image_path, act_class, model, topk=5):
+
+
+def predict(image_path, act_class, model, topk=5, visualize=False):
     '''
     Predict the class (or classes) of an image using a trained deep learning model.
 
@@ -484,10 +553,16 @@ def predict(image_path, act_class, model, topk=5):
         path to the image file to be classified.
     act_class : str
         actual class of the provided image (1-102).
-    model : TYPE
-        DESCRIPTION.
-    topk : TYPE, optional
-        DESCRIPTION. The default is 5.
+    model : torchvision models vgg13 OR resnet34
+        configured model for flower classification that is already trained        
+    topk : int, optional
+        Top k probabilities.  The default is 5.
+    visualize : boolean
+        The default is False with the expectation that the results will be 
+        displayed in text form from the command line output.  True will plot
+        the image and the probabilities using matplotlib.
+        
+        
 
     Returns
     -------
@@ -514,29 +589,24 @@ def predict(image_path, act_class, model, topk=5):
         model.train()
         
     probs = top_p.to('cpu').flatten().tolist()
-    
-    ## Plot the image
-    imshow(process_image(image_path), title=image_path)
-    
-    ## Plot the probabilities
-    fig, ax = plt.subplots()
 
-    with open('cat_to_name.json', 'r') as f:
-        cat_to_name = json.load(f)
-
-    # Example data
-    class_labels = list(itemgetter(*top_class)(cat_to_name))
-    for i in range(len(class_labels)):
-        if cat_to_name[act_class] == class_labels[i]:
-            class_labels[i] += '**' 
-    y_pos = np.arange(len(class_labels))
-    
-    ax.barh(y_pos, probs, align='center')
-    ax.set_yticks(y_pos, labels=class_labels)
-    ax.invert_yaxis()  # labels read top-to-bottom
-    ax.set_xlabel('Probability')
-    ax.set_ylabel('Top5 Classes (** is the actual class)')
-    
-    plt.show()
+    if visualize:
+        predict_show(process_image(image_path), top_class, act_class, probs, 
+                     image_path)
+    else:
+        with open('cat_to_name.json', 'r') as f:
+            cat_to_name = json.load(f)
+        
+        class_labels = list(itemgetter(*top_class)(cat_to_name))
+        for i in range(len(class_labels)):
+            if cat_to_name[act_class] == class_labels[i]:
+                class_labels[i] += '**' 
+        
+        print('Top Classes are (** is the actual class):')
+        
+        for i in range(len(class_labels)):
+            label = class_labels[i]
+            prob = probs[i]*100
+            print(f'Label: {label:20}   Probability: {prob:.2f}%')
     
 
