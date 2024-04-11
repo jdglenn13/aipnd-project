@@ -39,9 +39,8 @@ parser.add_argument('--checkpoint_file', type = str,
 parser.add_argument('--topk', type = int, 
                     help = 'topk classes to display in the output, 1-5',
                     default = 5)
-parser.add_argument('--visualize', type = bool, 
-                    help = 'True will display results in matplotlib',
-                    default = False)
+parser.add_argument('--visualize', action="store_true", 
+                    help = 'Add this argument to visualize output in matplotlib')
 
 
 
@@ -53,7 +52,7 @@ image_class = args.image_class
 checkpoint_file = args.checkpoint_file
 topk = args.topk
 visualize = args.visualize
-
+print(visualize)
 
 ## Load model from specified checkpoint file
 model, optimizer, criterion = jfc.load_checkpoint(checkpoint_file)
