@@ -52,7 +52,6 @@ image_class = args.image_class
 checkpoint_file = args.checkpoint_file
 topk = args.topk
 visualize = args.visualize
-print(visualize)
 
 ## Load model from specified checkpoint file
 model, optimizer, criterion = jfc.load_checkpoint(checkpoint_file)
