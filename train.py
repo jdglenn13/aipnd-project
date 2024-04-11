@@ -70,15 +70,15 @@ test_loader = b
 valid_loader = c
 class_to_idx = d
 
+## Set the model Class_to_idx value
+model.class_to_idx = class_to_idx
+
 ## Run an initial test of the created untrained model
 jfc.testDataset('Test on Untrained Model', test_loader, model, criterion)
 
 ## Train the model
 model, optimizer = jfc.trainModel(model, train_loader, test_loader, optimizer, 
                                   criterion, epochs)
-
-## Set the model Class_to_idx value
-model.class_to_idx = class_to_idx
 
 ## Validate Training Model with validation data and save a checkpoint
 jfc.modelCheckpoint(model, optimizer, criterion, valid_loader, 

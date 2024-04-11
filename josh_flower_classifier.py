@@ -71,7 +71,7 @@ def create_flower_network(arch, learn_rate, hidden_units):
         
     elif arch == 'resnet':
         ## Set the model to the Resnet34 model with default weights
-        model = models.vgg13(weights='DEFAULT')
+        model = models.resnet34(weights='DEFAULT')
         
         # Freeze parameters so we don't backprop through them
         for param in model.parameters():
