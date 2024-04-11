@@ -218,7 +218,7 @@ def testDataset(msg_str, loader, model, criterion):
         print(f'Model Performance for {msg_str}')
         print(f'Model Duration on Test Data (seconds): {e_end - e_start:.2f} ',
               f'Accuracy: {test_accuracy:.2f}% ',
-              f'Loss: {test_loss}')
+              f'Loss: {test_loss:.3f}')
     
     model.train()
     return test_accuracy, test_loss
