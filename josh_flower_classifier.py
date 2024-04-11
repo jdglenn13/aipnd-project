@@ -120,7 +120,7 @@ def prepare_dataloaders(data_dir):
         Dataloader with all of the Testing data.
     valid_loader : Torch Dataloader
         Dataloader with all of the Validation data.
-    class_to_idx : tbd
+    class_to_idx : Dictionary
         Class to Index dictionary to be set with the training model
 
     '''
@@ -159,7 +159,9 @@ def prepare_dataloaders(data_dir):
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=64)
     valid_loader = torch.utils.data.DataLoader(valid_data, batch_size=64)
     
-    return train_loader, test_loader, valid_loader
+    class_to_idx = train_data.class_to_idx
+    
+    return train_loader, test_loader, valid_loader, class_to_idx
 
 ## Function to run test data through a model
 def testDataset(msg_str, loader, model, criterion):

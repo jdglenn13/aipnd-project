@@ -16,17 +16,7 @@ INPUTS: Arguments to the train.py script
     --checkpoint_filename: checkpoint filename.  Defaults to 
         'checkpoint.pth'
 OUTPUTS:
-    - checkpoint.pth file (or checkpoint_filename) including the following 
-        attributes:
-        > model_type - similar to arch, but string used in ingesting the 
-            checkpoint for use in predict.py
-        > learn_rate - learning rate
-        > hidden_units - number of hidden units
-        > accuracy - accuracy of trained model
-        > class_to_idx - mapping of classes to indices
-        > classifier_state_dict - state_dict for the model
-        > optimizer_state_dict - state_dict for the optimizer for potential
-            further training.
+    - checkpoint.pth file (or checkpoint_filename)
 
 '''
 
