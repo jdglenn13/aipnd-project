@@ -6,7 +6,7 @@ This project has leveraged the pytorch pre-trained models Resnet34 and VGG13.  T
 
 
 # Installation
-**NOTE:** The josh_flower_classifier.py, train.py, and predict.py scripts were created on a Conda environment running Python 3.11 with the packages defined in spec-file.txt.  The Udacity training environment won't let me set up a conda environment running Python 3.11 and the related packages, so I'm unable to test my scripts as originally written and tested in the udacity environment.  However, I have created equivalent scripts with `_udacity` in the filename that should work in the udacity workspaces.  Code has been changed in the scripts to accomodate the differences in versions in the udacity workspace and the workspace_utils.py script is also required to maintain the session in the udacity workspace for training.
+**NOTE:** The josh_flower_classifier.py, train.py, and predict.py scripts were created on a Conda environment running Python 3.11 with the packages defined in spec-file.txt.  The Udacity training environment won't let me set up a conda environment running Python 3.11 and the related packages, so I'm unable to test my scripts as originally written and tested in the udacity environment.  However, I have created equivalent scripts with `_udacity` in the filename that should work in the udacity workspaces.  Code has been changed in the scripts to accomodate the differences in versions in the udacity workspace.  I attempted to utilize the workspace-utils.py script to keep the session active during training, but I received errors and abandoned attempting to get the script to work with that script.
 
 The following files within the ImageClassifier folder are required for use with this progam:
 * josh_flower_classifier.py
