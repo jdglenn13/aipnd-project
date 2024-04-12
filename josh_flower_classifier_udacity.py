@@ -4,7 +4,8 @@ description: This script includes the functions necessary to
     support the train.py and predict.py scripts for the udacity 'AI Programming
     with Python' nanodegree program for creating my own image classifier.
 author: Joshua Glenn (jglenn@its.jnj.com)
-last modified: 11Apr2024
+last modified: 12Apr2024
+** _udacity script created to work int he udacity python 3.6 environment
 '''
 
 ## Imports
@@ -53,7 +54,7 @@ def create_flower_network(arch, learn_rate, hidden_units):
     
     if arch == 'vgg':
         ## Set the model to the VGG13 model with default weights
-        model = models.vgg13(weights='DEFAULT')
+        model = models.vgg13(pretrained=True)
         
         # Freeze parameters so we don't backprop through them
         for param in model.parameters():
@@ -73,7 +74,7 @@ def create_flower_network(arch, learn_rate, hidden_units):
         
     elif arch == 'resnet':
         ## Set the model to the Resnet34 model with default weights
-        model = models.resnet34(weights='DEFAULT')
+        model = models.resnet34(pretrained=True)
         
         # Freeze parameters so we don't backprop through them
         for param in model.parameters():
@@ -368,7 +369,7 @@ def load_checkpoint(filepath):
 
     '''
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    checkpoint = torch.load(filepath, map_location=device)
+    checkpoint = torch.load(filepath)
     
     arch = checkpoint['arch']
     learn_rate = checkpoint['learn_rate']
@@ -494,6 +495,7 @@ def predict_show(image, top_class, act_class, probs,
         for i in range(len(class_labels)):
             if cat_to_name[act_class] == class_labels[i]:
                 class_labels[i] += '**' 
+    
     y_pos = np.arange(len(class_labels))
     
     ax[1].barh(y_pos, probs, align='center')
@@ -590,10 +592,10 @@ def predict(image_path, act_class, model, topk=5, visualize=False):
         top_p, top_class = ps.topk(topk)
         #invert the class index
         class_to_idx = {v: k for k, v in model.class_to_idx.items()}
-        top_class = list(itemgetter(*top_class.to('cpu').flatten().tolist())(class_to_idx))
+        top_class = list(itemgetter(*top_class.to('cpu').reshape(-1).tolist())(class_to_idx))
         model.train()
         
-    probs = top_p.to('cpu').flatten().tolist()
+    probs = top_p.to('cpu').reshape(-1).tolist()
 
     if visualize:
         predict_show(process_image(image_path), top_class, act_class, probs, 
