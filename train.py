@@ -70,7 +70,7 @@ gpu = args.gpu
 # Handle whether the GPU will be used based on parameter provided.
 if gpu and torch.cuda.is_available():
     device = torch.device('cuda')
-    print('This script will be run using device [gpu...')
+    print('This script will be run using device [cuda]...')
 elif gpu and torch.cuda.is_available() == False:
     device = torch.device('cpu')
     print('You selected --gpu, but your device is not cuda capable.  '

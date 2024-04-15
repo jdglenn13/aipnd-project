@@ -184,7 +184,7 @@ def testDataset(msg_str, loader, model, criterion, device):
     criterion : torch nn.NLLLoss
         criterion created when the model to be trained was created.
     device : torch.device()
-        set to either 'cpu' or 'gpu'.
+        set to either 'cpu' or 'cuda'.
 
     Returns
     -------
@@ -250,7 +250,7 @@ def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs,
     epochs : int
         number of epochs to train the model through the data.
     device : torch.device()
-        set to either 'cpu' or 'gpu'.
+        set to either 'cpu' or 'cuda'.
 
     Returns
     -------
@@ -331,7 +331,7 @@ def modelCheckpoint(model, optimizer, criterion, valid_loader,
     arch : string
         either "vgg" or "resnet".
     device : torch.device()
-        set to either 'cpu' or 'gpu'.
+        set to either 'cpu' or 'cuda'.
 
     Returns
     -------
@@ -365,7 +365,7 @@ def load_checkpoint(filepath, device):
     filepath : str
         filepath to the checkpoint file.
     device : torch.device()
-        set to either 'cpu' or 'gpu'.
+        set to either 'cpu' or 'cuda'.
 
     Returns
     -------
@@ -571,7 +571,7 @@ def predict(image_path, act_class, model, device, topk=5, visualize=False):
     model : torchvision models vgg13 OR resnet34
         configured model for flower classification that is already trained 
     device : torch.device()
-        set to either 'cpu' or 'gpu'.
+        set to either 'cpu' or 'cuda'.
     topk : int, optional
         Top k probabilities.  The default is 5.
     visualize : boolean
