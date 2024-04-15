@@ -450,7 +450,7 @@ def process_image(image):
 
 ## function to display both the image and the plot of the prediction
 def predict_show(image, top_class, act_class, probs, 
-                 image_path):
+                 image_path, cat_to_name_json):
     '''
     function used to plot both the image and the prediction called from the 
     predict function.
@@ -467,6 +467,8 @@ def predict_show(image, top_class, act_class, probs,
         list of the probabilities to plot
     image_path : str
         path of the image that was processed.
+    cat_to_name_json : str
+        path of the json file containing the category to Name mapping  
 
     Returns
     -------
@@ -496,7 +498,7 @@ def predict_show(image, top_class, act_class, probs,
     
     ## Plot the probabilities
 
-    with open('cat_to_name.json', 'r') as f:
+    with open(cat_to_name_json, 'r') as f:
         cat_to_name = json.load(f)
 
     # Example data
@@ -560,7 +562,8 @@ def imshow(image, title=None):
     
 
 
-def predict(image_path, act_class, model, device, topk=5, visualize=False):
+def predict(image_path, act_class, model, device, cat_to_name_json, topk=5, 
+            visualize=False):
     '''
     Predict the class (or classes) of an image using a trained deep learning model.
 
@@ -574,6 +577,8 @@ def predict(image_path, act_class, model, device, topk=5, visualize=False):
         configured model for flower classification that is already trained
     device : torch.device()
         set to either 'cpu' or 'cuda'.
+    cat_to_name_json : str
+        path of the json file containing the category to Name mapping      
     topk : int, optional
         Top k probabilities.  The default is 5.
     visualize : boolean
@@ -610,9 +615,9 @@ def predict(image_path, act_class, model, device, topk=5, visualize=False):
 
     if visualize:
         predict_show(process_image(image_path), top_class, act_class, probs, 
-                     image_path)
+                     image_path, cat_to_name_json)
     else:
-        with open('cat_to_name.json', 'r') as f:
+        with open(cat_to_name_json, 'r') as f:
             cat_to_name = json.load(f)
         
         class_labels = list(itemgetter(*top_class)(cat_to_name))

@@ -11,6 +11,7 @@ INPUTS: Arguments to the predict.py script
     --checkpoint_file : str
     --topk : int
     --visualize : bool
+    --gpu : bool
     
 OUTPUTS: Displays image with graph showing topk classes.
 '''
@@ -45,7 +46,9 @@ parser.add_argument('--visualize', action="store_true",
 parser.add_argument('--gpu', action="store_true",
                     help = ('Add this argument if you want to use a cuda '
                             'capable GPU to execute this script'))
-
+parser.add_argument('--cat_to_name_json', type = str, 
+                    default = 'cat_to_name.json',
+                    help = 'mapping file to map categories to names')
 
 
 ## Set variables to arguments
@@ -57,6 +60,7 @@ checkpoint_file = args.checkpoint_file
 topk = args.topk
 visualize = args.visualize
 gpu = args.gpu
+cat_to_name_json = args.cat_to_name_json
 
 
 # Handle whether the GPU will be used based on parameter provided.
@@ -75,4 +79,5 @@ elif gpu == False:
 model, optimizer, criterion = jfc.load_checkpoint(checkpoint_file, device)
 
 ## predict the classification of the provided image
-jfc.predict(image_file, image_class, model, device, topk, visualize)
+jfc.predict(image_file, image_class, model, device, cat_to_name_json,
+            topk, visualize)
