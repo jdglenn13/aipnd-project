@@ -19,11 +19,11 @@ The default arguments of train.py make use of the already loaded 'flowers' direc
 # Commands for Testing scripts:
 The following command will train the model using the default values defined in train.py (image_directory=flowers, arch=resnet, learn_rate=0.003, hidden_units=256, epochs=4):
 
-`python train.py --checkpoint_file checkpoint_resnet.pth`
+`python train.py --checkpoint_file checkpoint_resnet.pth --gpu`
 
 The following command will train the model using the base VGG13 model.  Note the hidden units argument is used due to the VGG network's large number of starting nodes in the classifier to split the difference a bit more:
 
-`python train.py --checkpoint_file checkpoint_vgg.pth --arch vgg --hidden_units 1024`
+`python train.py --checkpoint_file checkpoint_vgg.pth --arch vgg --hidden_units 1024 --gpu`
 
 The following commands will test the network on two flower images taken directly from the validation test set.  The predict.py script has the ability to plot the results in matplotlib with '--visualize', but that is excluded here so the results are just printed to the screen:
 
