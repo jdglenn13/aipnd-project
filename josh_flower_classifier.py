@@ -39,6 +39,7 @@ def create_flower_network(arch, learn_rate, hidden_units):
             following based on the model:
                 resnet: 512
                 vgg: 25088
+        
 
     Returns
     -------
@@ -166,7 +167,7 @@ def prepare_dataloaders(data_dir):
     return train_loader, test_loader, valid_loader, class_to_idx
 
 ## Function to run test data through a model
-def testDataset(msg_str, loader, model, criterion):
+def testDataset(msg_str, loader, model, criterion, device):
     '''
     testDataset will test a provided model with a provided dataloader and will
     output the accuracy and loss, as well as printing a message related to 
@@ -182,6 +183,8 @@ def testDataset(msg_str, loader, model, criterion):
         may be a pre-trained or untrained model.
     criterion : torch nn.NLLLoss
         criterion created when the model to be trained was created.
+    device : torch.device()
+        set to either 'cpu' or 'gpu'.
 
     Returns
     -------
@@ -191,7 +194,6 @@ def testDataset(msg_str, loader, model, criterion):
         the loss for the test run.
 
     '''
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     accuracy = 0
     running_loss = 0
@@ -228,7 +230,8 @@ def testDataset(msg_str, loader, model, criterion):
     
     
 # Function for Trainig the model and testing it with each epoch
-def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs):
+def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs,
+               device):
     '''
     trainModel will train a provided model with the provided inputs.
 
@@ -246,6 +249,8 @@ def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs):
         criterion created when the model was created.
     epochs : int
         number of epochs to train the model through the data.
+    device : torch.device()
+        set to either 'cpu' or 'gpu'.
 
     Returns
     -------
@@ -256,7 +261,6 @@ def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs):
 
     '''
     
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     running_loss = 0
     step_size = 20
@@ -287,12 +291,13 @@ def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs):
                       f'Duration: {b_end - b_start:.2f} ',
                       f'Loss: {running_loss/step_size:.6f}')
                 testDataset(f'After Epoch {e+1}, Batch {b_set}', test_loader, 
-                            model, criterion)
+                            model, criterion, device)
                 running_loss = 0
               
         t_end = time.time()
         print(f'Training Epoch {e+1} duration: {t_end - t_start:.2f}')
-        testDataset(f'After Training Epoch {e+1}', test_loader, model, criterion)
+        testDataset(f'After Training Epoch {e+1}', test_loader, model, 
+                    criterion, device)
     
     end = time.time()
     print(f'Total Training Time (Seconds): {end - start:.2f}')
@@ -301,7 +306,8 @@ def trainModel(model, train_loader, test_loader, optimizer, criterion, epochs):
     
 # Run Validation Data through the model and Create a Model Checkpoint
 def modelCheckpoint(model, optimizer, criterion, valid_loader, 
-                    checkpoint_filename, learn_rate, hidden_units, arch):
+                    checkpoint_filename, learn_rate, hidden_units, arch,
+                    device):
     '''
     modelCheckpoint will test the model using validation data, then save the
     model to a checkpoint file.
@@ -324,6 +330,8 @@ def modelCheckpoint(model, optimizer, criterion, valid_loader,
         used to include in checkpoint file.
     arch : string
         either "vgg" or "resnet".
+    device : torch.device()
+        set to either 'cpu' or 'gpu'.
 
     Returns
     -------
@@ -332,7 +340,8 @@ def modelCheckpoint(model, optimizer, criterion, valid_loader,
     '''
     
     final_accuracy, final_loss = testDataset("Test with Validation Data", 
-                                            valid_loader, model, criterion)
+                                            valid_loader, model, criterion,
+                                            device)
 
     checkpoint = {'arch': arch,
                   'learn_rate': learn_rate,
@@ -346,15 +355,17 @@ def modelCheckpoint(model, optimizer, criterion, valid_loader,
     
 
 # Load Model function
-def load_checkpoint(filepath):
+def load_checkpoint(filepath, device):
     '''
     load_checkpoint will take a filepath to a checkpoint file and load the 
     model, optimizer and criterion.
 
     Parameters
     ----------
-    filepath : TYPE
-        DESCRIPTION.
+    filepath : str
+        filepath to the checkpoint file.
+    device : torch.device()
+        set to either 'cpu' or 'gpu'.
 
     Returns
     -------
@@ -367,7 +378,6 @@ def load_checkpoint(filepath):
         criterion ready to be used for training & testing the model.
 
     '''
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     checkpoint = torch.load(filepath, map_location=device)
     
     arch = checkpoint['arch']
@@ -548,7 +558,7 @@ def imshow(image, title=None):
     
 
 
-def predict(image_path, act_class, model, topk=5, visualize=False):
+def predict(image_path, act_class, model, device, topk=5, visualize=False):
     '''
     Predict the class (or classes) of an image using a trained deep learning model.
 
@@ -559,7 +569,9 @@ def predict(image_path, act_class, model, topk=5, visualize=False):
     act_class : str
         actual class of the provided image (1-102).
     model : torchvision models vgg13 OR resnet34
-        configured model for flower classification that is already trained        
+        configured model for flower classification that is already trained 
+    device : torch.device()
+        set to either 'cpu' or 'gpu'.
     topk : int, optional
         Top k probabilities.  The default is 5.
     visualize : boolean
@@ -574,7 +586,6 @@ def predict(image_path, act_class, model, topk=5, visualize=False):
     None.
 
     '''
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     
     # Predict the class of the image

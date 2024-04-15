@@ -11,12 +11,14 @@ INPUTS: Arguments to the predict.py script
     --checkpoint_file : str
     --topk : int
     --visualize : bool
+    --gpu : bool
     
 OUTPUTS: Displays image with graph showing topk classes.
 '''
 
 ## Imports
 import argparse
+import torch
 import josh_flower_classifier as jfc
 
 
@@ -41,6 +43,9 @@ parser.add_argument('--topk', type = int,
                     default = 5)
 parser.add_argument('--visualize', action="store_true", 
                     help = 'Add this argument to visualize output in matplotlib')
+parser.add_argument('--gpu', action="store_true",
+                    help = ('Add this argument if you want to use a cuda '
+                            'capable GPU to execute this script'))
 
 
 
@@ -52,9 +57,23 @@ image_class = args.image_class
 checkpoint_file = args.checkpoint_file
 topk = args.topk
 visualize = args.visualize
+gpu = args.gpu
+
+
+# Handle whether the GPU will be used based on parameter provided.
+if gpu and torch.cuda.is_available():
+    device = torch.device('gpu')
+    print('This script will be run using device [gpu...')
+elif gpu and torch.cuda.is_available() == False:
+    device = torch.device('cpu')
+    print('You selected --gpu, but your device is not cuda capable.  '
+          'This script will be run using device [cpu]...')
+elif gpu == False:
+    device = torch.device('cpu')
+    print('This script will be run using device [cpu]...')
 
 ## Load model from specified checkpoint file
-model, optimizer, criterion = jfc.load_checkpoint(checkpoint_file)
+model, optimizer, criterion = jfc.load_checkpoint(checkpoint_file, device)
 
 ## predict the classification of the provided image
-jfc.predict(image_file, image_class, model, topk, visualize)
+jfc.predict(image_file, image_class, model, device, topk, visualize)
