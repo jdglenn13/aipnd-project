@@ -504,6 +504,7 @@ def predict_show(image, top_class, act_class, probs,
         for i in range(len(class_labels)):
             if cat_to_name[act_class] == class_labels[i]:
                 class_labels[i] += '**' 
+    
     y_pos = np.arange(len(class_labels))
     
     ax[1].barh(y_pos, probs, align='center')
@@ -569,7 +570,7 @@ def predict(image_path, act_class, model, device, topk=5, visualize=False):
     act_class : str
         actual class of the provided image (1-102).
     model : torchvision models vgg13 OR resnet34
-        configured model for flower classification that is already trained 
+        configured model for flower classification that is already trained
     device : torch.device()
         set to either 'cpu' or 'cuda'.
     topk : int, optional

@@ -24,6 +24,7 @@ OUTPUTS:
 
 ## Imports
 import argparse
+import torch
 import josh_flower_classifier_udacity as jfc
 
 
@@ -49,6 +50,10 @@ parser.add_argument('--epochs', type = int, default = 4,
 parser.add_argument('--checkpoint_filename', type = str, 
                     default = 'checkpoint.pth',
                     help = 'filename with .pth extension')
+parser.add_argument('--gpu', action="store_true",
+                    help = ('Add this argument if you want to use a cuda '
+                            'capable GPU to execute this script.'))
+
 
 ## Set variables to arguments
 args = parser.parse_args()
@@ -59,6 +64,19 @@ learn_rate = args.learn_rate
 hidden_units = args.hidden_units
 epochs = args.epochs
 checkpoint_filename = args.checkpoint_filename
+gpu = args.gpu
+
+# Handle whether the GPU will be used based on parameter provided.
+if gpu and torch.cuda.is_available():
+    device = torch.device('cuda')
+    print('This script will be run using device [cuda]...')
+elif gpu and torch.cuda.is_available() == False:
+    device = torch.device('cpu')
+    print('You selected --gpu, but your device is not cuda capable.  '
+          'This script will be run using device [cpu]...')
+elif gpu == False:
+    device = torch.device('cpu')
+    print('This script will be run using device [cpu]...')
 
 
 ## Create new model/optimizer/criterion based on inputs provided.
@@ -76,25 +94,14 @@ class_to_idx = d
 model.class_to_idx = class_to_idx
 
 ## Run an initial test of the created untrained model
-jfc.testDataset('Test on Untrained Model', test_loader, model, criterion)
+jfc.testDataset('Test on Untrained Model', test_loader, model, criterion, 
+                device)
 
 ## Train the model
 model, optimizer = jfc.trainModel(model, train_loader, test_loader, optimizer, 
-                                  criterion, epochs)
+                                  criterion, epochs, device)
 
 ## Validate Training Model with validation data and save a checkpoint
 jfc.modelCheckpoint(model, optimizer, criterion, valid_loader, 
-                    checkpoint_filename, learn_rate, hidden_units, arch)
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    checkpoint_filename, learn_rate, hidden_units, arch,
+                    device)

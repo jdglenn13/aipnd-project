@@ -106,16 +106,3 @@ model, optimizer = jfc.trainModel(model, train_loader, test_loader, optimizer,
 jfc.modelCheckpoint(model, optimizer, criterion, valid_loader, 
                     checkpoint_filename, learn_rate, hidden_units, arch,
                     device)
-
-
-
-
-
-
-
-
-
-
-
-
-
